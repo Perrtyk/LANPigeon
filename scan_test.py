@@ -1,7 +1,7 @@
-from concurrent.futures import ThreadPoolExecutor
-from PigeonTool import PigeonTool
-from thread_worker import *
-from terminal_table import *
+from assets.PigeonTool import PigeonTool
+from assets.thread_worker import *
+from assets.terminal_table import *
+from assets.save_to_txt import *
 import time
 
 tool = PigeonTool()
@@ -31,7 +31,7 @@ def scan(ip):
         duration_mac = round(duration_mac, 2)
         print(ip)
         print(f'time {duration_alive}     {alive}\ntime {duration_ping}     {ping}\n'
-              f'time {duration_host}     {host}\ntime {duration_mac}     {mac}')
+              f'time {duration_host}     {host}\ntime {duration_mac}     {mac}\n')
         endpoint = {
             "ip_address": ip,
             "alive_status": alive,
@@ -60,28 +60,28 @@ def main():
 
     duration_total = time.time() - start_time
     duration_total = round(duration_total, 2)
+    result = '----------STATS----------\n'
+    result += f'Scan Duration: {duration_total}\n'
+    result += f'CPU Count: {cores}\n'
+    result += f'CPU %: {usage}\n'
+    result += f'Thread Numbers: {threads}\n'
 
-    print('----------STATS----------')
-    print(f'Scan Duration: {duration_total}')
-    print(f'CPU Count: {cores}')
-    print(f'CPU %: {usage}')
-    print(f'Thread Numbers: {threads}')
-    print()
+    result += '-------SCAN  STATS-------\n'
+    result += f"scanned ips: {len(endpoints)}\n"
+    result += f"endpoints found: {len([endpoint for endpoint in endpoints if endpoint['alive_status'] != 'N/A'])}\n"
+    result += f'endpoints: {endpoints}\n\n'
 
-    print(f'number of results: {len(endpoints)}')
-    print(f'endpoints: {endpoints}')
-    print()
+    result += f'PRINTING DATA TEST (Expect index 0 given endpoint 1):\n'
+    result += f'{get_data(endpoints, 1)}\n\n'
 
-    print(f'PRINTING DATA TEST (Expect index 0 given endpoint 1):')
-    print(get_data(endpoints, 1))
-    print()
-
-    print(f'PRINTING TABLE TEST:')
+    result += f'PRINTING TABLE TEST:\n'
     table = create_table(endpoints)
-    print(table)
-    print()
+    result += f'{table}\n\n'
 
+    print(result)
+    prompt_save(result)
     input('Press enter to Exit . . .')
 
 if __name__ == "__main__":
     main()
+

@@ -25,7 +25,7 @@ class PigeonTool:
             return ping_time
 
     def connect(self, ip_address):
-        response = subprocess.Popen(['ping', '-n', '1', '-w', '250', str(ip_address)],
+        response = subprocess.Popen(['ping', '-n', '1', '-w', '350', str(ip_address)],
                                     stdout=subprocess.PIPE, creationflags=subprocess.CREATE_NO_WINDOW).communicate()[0]
         available, not_available = 'Yes', 'No'
         if b'Reply from' in response:
