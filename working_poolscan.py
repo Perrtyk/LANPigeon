@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from PigeonTool import PigeonTool
+from thread_worker import *
 import time
-import psutil
 
 tool = PigeonTool()
 ips = [f"192.168.1.{i}" for i in range(1, 255)]
@@ -31,33 +31,27 @@ def scan(ip):
         duration_mac = round(duration_mac, 2)
         print(ip)
         print(f'time {duration_alive}     {alive}\ntime {duration_ping}     {ping}\n'
-          f'time {duration_host}     {host}\ntime {duration_mac}     {mac}')
+              f'time {duration_host}     {host}\ntime {duration_mac}     {mac}')
         print()
+def main():
+    ips = [f"192.168.1.{i}" for i in range(1, 255)]
+    cores = cpu_cores()                         # amount of cores in CPU
+    usage = cpu_usage()                         # maps current usage of CPU in %
+    x = 3                                       # thread multiplier, default 3
+    threads = thread_count(ips, cores, usage) * x
 
-# Determine the optimal number of threads based on CPU usage
-cpu_count = psutil.cpu_count(logical=False)
-print(f'CPU Count: {cpu_count}')
-cpu_percent = psutil.cpu_percent(interval=1)
-print(f'CPU %: {cpu_percent}')
 
-# Determine the number of threads to use based on CPU usage and number of IPs to scan
-num_threads = min(len(ips), max(1, int(cpu_count * (1 - cpu_percent/100))))
-num_threads = (num_threads * 3)
-print(f'Thread Numbers: {num_threads}')
+    thread_workers(scan, ips, cores, usage, x)  # runs function with set amount of threads
 
-# Create a thread pool with the determined number of threads
-with ThreadPoolExecutor(max_workers=num_threads) as executor:
-    # Submit each IP address to the thread pool for scanning
-    for ip in ips:
-        executor.submit(scan, ip)
+    duration_total = time.time() - start_time
+    duration_total = round(duration_total, 2)
 
-duration_total = time.time() - start_time
-duration_total = round(duration_total, 2)
-for i in range(20):
-    print()
-print('----------STATS----------')
-print(f'Scan Duration: {duration_total}')
-print(f'CPU Count: {cpu_count}')
-print(f'CPU %: {cpu_percent}')
-print(f'Thread Numbers: {num_threads}')
-input('Press anything to Exit . . .')
+    print('----------STATS----------')
+    print(f'Scan Duration: {duration_total}')
+    print(f'CPU Count: {cores}')
+    print(f'CPU %: {usage}')
+    print(f'Thread Numbers: {threads}')
+    input('Press anything to Exit . . .')
+
+if __name__ == "__main__":
+    main()
