@@ -64,12 +64,12 @@ def main():
     result += f'Scan Duration: {duration_total}\n'
     result += f'CPU Count: {cores}\n'
     result += f'CPU %: {usage}\n'
-    result += f'Thread Numbers: {threads}\n'
+    result += f'Thread Numbers: {threads}\n\n'
 
     result += '-------SCAN  STATS-------\n'
     result += f"scanned ips: {len(endpoints)}\n"
     result += f"endpoints found: {len([endpoint for endpoint in endpoints if endpoint['alive_status'] != 'N/A'])}\n"
-    result += f'endpoints: {endpoints}\n\n'
+    result += f'endpoint array: {endpoints}\n\n'
 
     result += f'PRINTING DATA TEST (Expect index 0 given endpoint 1):\n'
     result += f'{get_data(endpoints, 1)}\n\n'
