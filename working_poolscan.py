@@ -40,6 +40,7 @@ print(f'CPU %: {cpu_percent}')
 
 # Determine the number of threads to use based on CPU usage and number of IPs to scan
 num_threads = min(len(ips), max(1, int(cpu_count * (1 - cpu_percent/100))))
+num_threads = (num_threads * 3)
 print(f'Thread Numbers: {num_threads}')
 
 # Create a thread pool with the determined number of threads
