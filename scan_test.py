@@ -23,10 +23,12 @@ def main():
 
     result += '-------SCAN  STATS-------\n'
     result += f"scanned ips: {len(endpoints)}\n"
-    result += f"endpoints found: {len([endpoint for endpoint in endpoints if endpoint['alive_status'] != 'N/A'])}\n"
-    result += f'endpoint array: {endpoints}\n\n'
+    result += f"endpoints found: {len([endpoint for endpoint in endpoints if endpoint['alive_status'] != 'No'])}\n"
+    result += f'scan array:\n'
+    for endpoint in endpoints:
+        result += f'{str(endpoint)}\n'
 
-    result += f'PRINTING GETTER(Expect index 0 given endpoint 1):\n'
+    result += f'\nPRINTING GETTER(Expect index 0 given endpoint 1):\n'
     result += f'{get_data(endpoints, 1)}\n\n'
 
     result += f'PRINTING TABLE TEST:\n'
@@ -34,6 +36,7 @@ def main():
     result += f'{table}\n\n'
 
     print(result)
+
     prompt_save(result)
     input('Press enter to Exit . . .')
 

@@ -38,8 +38,8 @@ def scan(ip):
         }
     else:
         endpoint = {
-            "ip_address": 'N/A',
-            "alive_status": 'N/A',
+            "ip_address": ip,
+            "alive_status": 'No',
             "ping_status": 'N/A',
             "hostname_status": 'N/A',
             "mac_address": 'N/A'}
