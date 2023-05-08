@@ -12,6 +12,7 @@ def scan(ip):
     start_time = time.time()
     alive = tool.connect(ip)
     duration_alive = time.time() - start_time
+    duration_alive = round(duration_alive, 2)
 
     if alive == 'Yes':
         start_time = time.time()
@@ -28,9 +29,10 @@ def scan(ip):
         mac = tool.mac_address(ip)
         duration_mac = time.time() - start_time
         duration_mac = round(duration_mac, 2)
-
-        print(f'time {duration_alive}{alive}\ntime {duration_ping}{ping}\n'
-          f'time {duration_host}{host}\ntime {duration_mac}{mac}')
+        print(ip)
+        print(f'time {duration_alive}     {alive}\ntime {duration_ping}     {ping}\n'
+          f'time {duration_host}     {host}\ntime {duration_mac}     {mac}')
+        print()
 
 # Determine the optimal number of threads based on CPU usage
 cpu_count = psutil.cpu_count(logical=False)
