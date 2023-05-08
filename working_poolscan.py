@@ -1,10 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
 from PigeonTool import PigeonTool
 from thread_worker import *
+from terminal_table import *
 import time
 
 tool = PigeonTool()
-ips = [f"192.168.1.{i}" for i in range(1, 255)]
 start_time = time.time()
 
 def scan(ip):
@@ -32,7 +32,23 @@ def scan(ip):
         print(ip)
         print(f'time {duration_alive}     {alive}\ntime {duration_ping}     {ping}\n'
               f'time {duration_host}     {host}\ntime {duration_mac}     {mac}')
-        print()
+        endpoint = {
+            "ip_address": ip,
+            "alive_status": alive,
+            "ping_status": ping,
+            "hostname_status": host,
+            "mac_address": mac
+        }
+    else:
+        endpoint = {
+            "ip_address": 'N/A',
+            "alive_status": 'N/A',
+            "ping_status": 'N/A',
+            "hostname_status": 'N/A',
+            "mac_address": 'N/A'}
+
+    return endpoint
+
 def main():
     ips = [f"192.168.1.{i}" for i in range(1, 255)]
     cores = cpu_cores()                         # amount of cores in CPU
@@ -40,8 +56,7 @@ def main():
     x = 3                                       # thread multiplier, default 3
     threads = thread_count(ips, cores, usage) * x
 
-
-    thread_workers(scan, ips, cores, usage, x)  # runs function with set amount of threads
+    endpoints = thread_workers(scan, ips, cores, usage, x)  # runs function with set amount of threads
 
     duration_total = time.time() - start_time
     duration_total = round(duration_total, 2)
@@ -51,7 +66,22 @@ def main():
     print(f'CPU Count: {cores}')
     print(f'CPU %: {usage}')
     print(f'Thread Numbers: {threads}')
-    input('Press anything to Exit . . .')
+    print()
+
+    print(f'number of results: {len(endpoints)}')
+    print(f'endpoints: {endpoints}')
+    print()
+
+    print(f'PRINTING DATA TEST (Expect index 0 given endpoint 1):')
+    print(get_data(endpoints, 1))
+    print()
+
+    print(f'PRINTING TABLE TEST:')
+    table = create_table(endpoints)
+    print(table)
+    print()
+
+    input('Press enter to Exit . . .')
 
 if __name__ == "__main__":
     main()

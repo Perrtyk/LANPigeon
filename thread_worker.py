@@ -28,7 +28,8 @@ def thread_workers(func, args, cpu_count, cpu_percent, multiplier):
 
     # Create a thread pool with the determined number of threads
     with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        # Submit each argument to the thread pool for processing
-        for arg in args:
-            executor.submit(func, arg)
-    executor.shutdown(wait=True)
+        # Submit each argument to the thread pool for processing and get the results
+        results = list(executor.map(func, args))
+
+    return results
+
