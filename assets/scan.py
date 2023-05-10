@@ -1,5 +1,5 @@
 import time
-from assets.PigeonTool import PigeonTool
+from PigeonTool import *
 
 tool = PigeonTool()
 start_time = time.time()

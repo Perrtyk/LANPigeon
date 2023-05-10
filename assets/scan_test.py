@@ -1,7 +1,7 @@
-from assets.thread_worker import *
-from assets.terminal_table import *
-from assets.save_to_txt import *
-from assets.scan import *
+from thread_worker import *
+from terminal_table import *
+from save_to_txt import *
+from scan import *
 import time
 
 def main():

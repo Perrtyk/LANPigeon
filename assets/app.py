@@ -1,148 +1,174 @@
-import tkinter
+import tkinter as ttk
+import tkinter.ttk as ttk
 import tkinter.messagebox
+import threading
+from PIL import Image
 import customtkinter
+import subprocess
+import sys
+import os
 
 customtkinter.set_appearance_mode("System")  # Modes: "System" (standard), "Dark", "Light"
 customtkinter.set_default_color_theme("blue")  # Themes: "blue" (standard), "green", "dark-blue"
-
 
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
+        print(f'printing working directory: {os.getcwd()}')
+
         # configure window
         self.title("CustomTkinter complex_example.py")
         self.geometry(f"{1100}x{580}")
+        self.minsize(900, 600)
 
-        # configure grid layout (4x4)
+        # load logo images
+        icon_light = Image.open("icon_light.png")
+        icon_dark = Image.open("icon_dark.png")
+        icon_bit = Image.open("bit_icon.ico")
+
+        # image access test
+
+        file_path = './icon_light.png'
+        if os.path.exists(file_path):
+            print('File exists and the script has access to it.')
+        else:
+            print('File does not exist or the script does not have access to it.')
+
+        # configure grid layout
+        self.grid_columnconfigure(0, weight=0)
         self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure((2, 3), weight=0)
-        self.grid_rowconfigure((0, 1, 2), weight=1)
+        self.grid_columnconfigure(2, weight=0)
+        self.grid_rowconfigure(0, weight=1)
 
+        # create column 0, row 0 (logo) frame
+        self.logo_frame = customtkinter.CTkFrame(self, corner_radius=0, width=140)
+
+        # create column 0, row 1 (button) frame
+        self.button_frame = customtkinter.CTkFrame(self, corner_radius=0, width=140)
+
+        # create column 1, row 2 (treeview) frame
+        self.treeview_frame = customtkinter.CTkFrame(self, corner_radius=0)
+
+                                        ##### create column 0 widgets #####
+
+        # logo: column 0, row 0
+        # title of the program
+        self.logo_label = customtkinter.CTkLabel(self.logo_frame, text="LAN Pigeon",
+                                                 font=customtkinter.CTkFont(size=20, weight="bold"))
+        # import of image and convert to label
+        #self.logo_icon = customtkinter.CTkImage(light_image=icon_light,
+        #                                        dark_image=icon_dark,
+        #                                        size=(150, 115))
+        #self.icon_label = customtkinter.CTkLabel(self.logo_frame, image=self.logo_icon, anchor=tkinter.CENTER, text='')
+
+        # buttons: column 0, row 1
+        # button 1
+        self.button1 = customtkinter.CTkButton(self.button_frame, command=self.button_click, text='Save Results')
+
+        # button 2
+        self.button2 = customtkinter.CTkButton(self.button_frame, command=self.button_click, text='Placeholder')
+
+        # button 3
+        self.button3 = customtkinter.CTkButton(self.button_frame, text='CMD Version',
+                                               command=lambda: threading.Thread(target=self.cmd_version_click).start())
+
+        # button 4
+        self.button4 = customtkinter.CTkButton(self.button_frame, command=self.button_click, text='Exit')
+
+
+                                        ##### create column 1 widgets #####
+
+        # treeview: column 1, row 2
+        # Create the results treeview
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
+        self.style.configure("Treeview", background="#333", foreground="#fff", fieldbackground="#333")
+        self.style.map("Treeview", background=[("selected", "#444")])
+        self.style.configure('Treeview.Heading', background="#444", foreground="#fff")
+        self.label_treeview = customtkinter.CTkLabel(master=self.treeview_frame, width=250, text="Results",
+                                                     font=customtkinter.CTkFont(size=14, weight="bold"))
+        self.results_columns = ('IP Address', 'Hostname', 'MAC Address', 'Ping', 'Connectivity')
+        self.results_treeview = ttk.Treeview(self.treeview_frame, columns=self.results_columns,
+                                             show='headings', height=23)
+        # Configure the results treeview columns
+        for column in self.results_columns:
+            self.results_treeview.heading(column, text=column)
+            self.results_treeview.column(column, anchor='center', width=150)
+        # Create a scrollbar for the results treeview
+        self.results_scrollbar = ttk.Scrollbar(self.treeview_frame, orient='vertical', command=self.results_treeview.yview)
+        self.results_treeview.configure(yscrollcommand=self.results_scrollbar.set)
+
+        #self.button5 = customtkinter.CTkButton(self, command=self.button_click)
+
+        # pack column 0, row 0 (logo) frame with widgets
+        #self.logo_label.grid(column=0, row=0, padx=(17, 0), sticky='new')
+        #self.icon_label.grid(column=0, row=1, padx=(17, 0), sticky='new')
+
+        # pack column 0, row 1 (button) frame with widgets
+        self.button1.grid(column=0, row=0, padx=20, pady=(10, 10), sticky='ew')
+        self.button2.grid(column=0, row=1, padx=20, pady=(10, 10), sticky='ew')
+        self.button3.grid(column=0, row=2, padx=20, pady=(10, 10), sticky='ew')
+        self.button4.grid(column=0, row=3, padx=20, pady=(10, 10), sticky='ew')
+
+        # pack column 1 with widgets
+        #self.button2.grid(row=0, column=1)
+        self.label_treeview.grid(row=1, column=0, columnspan=4, rowspan=1, sticky='new')
+        self.results_treeview.grid(row=2, column=0, columnspan=4, sticky="nsew")
+        self.results_scrollbar.grid(row=2, column=5, pady=(20, 0), padx=(0, 20), sticky='ns', rowspan=1)
+
+        # frame create
+        self.logo_frame.grid(row=0, column=0,rowspan=2, sticky="nwe")
+        self.button_frame.grid(row=1, column=0,rowspan=4, sticky="swe")
+        self.treeview_frame.grid(row=0, column=1,rowspan=2, sticky="nswe")
+
+        self.mainloop()
+
+    # add methods to app
+    def button_click(self):
+        print("button click")
+
+    def cmd_version_click(self):
+        # set terminal based on OS
+        if sys.platform.startswith('win'):
+            # For Windows
+            cmd = 'start cmd /c python scan_test.py'
+        elif sys.platform.startswith('darwin'):
+            # For Mac
+            cmd = 'open -a Terminal python scan_test.py'
+        else:
+            # For Linux
+            cmd = 'gnome-terminal -x python scan_test.py'
+
+        # Spawn a new process to run the command in a separate terminal window
+        subprocess.run(['start', '/b', 'cmd', '/c', 'python', 'scan_test.py'], shell=True)
+        #subprocess.run(['x-terminal-emulator', '-e', 'python /path/to/your/script.py'])
         # create sidebar frame with widgets
-        self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
-        self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-        self.sidebar_frame.grid_rowconfigure(4, weight=1)
-        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="CustomTkinter", font=customtkinter.CTkFont(size=20, weight="bold"))
-        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
-        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event)
-        self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
-        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
-        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
-        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
-                                                                       command=self.change_appearance_mode_event)
-        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
-        self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
-        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
-                                                               command=self.change_scaling_event)
-        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+
 
         # create main entry and button
-        self.entry = customtkinter.CTkEntry(self, placeholder_text="CTkEntry")
-        self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
 
-        self.main_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
-        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         # create textbox
-        self.textbox = customtkinter.CTkTextbox(self, width=250)
-        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
 
         # create tabview
-        self.tabview = customtkinter.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.tabview.add("CTkTabview")
-        self.tabview.add("Tab 2")
-        self.tabview.add("Tab 3")
-        self.tabview.tab("CTkTabview").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
-        self.tabview.tab("Tab 2").grid_columnconfigure(0, weight=1)
 
-        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("CTkTabview"), dynamic_resizing=False,
-                                                        values=["Value 1", "Value 2", "Value Long Long Long"])
-        self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("CTkTabview"),
-                                                    values=["Value 1", "Value 2", "Value Long....."])
-        self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("CTkTabview"), text="Open CTkInputDialog",
-                                                           command=self.open_input_dialog_event)
-        self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
-        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Tab 2"), text="CTkLabel on Tab 2")
-        self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
 
         # create radiobutton frame
-        self.radiobutton_frame = customtkinter.CTkFrame(self)
-        self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        self.radio_var = tkinter.IntVar(value=0)
-        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="CTkRadioButton Group:")
-        self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
-        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0)
-        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1)
-        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=2)
-        self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
+
 
         # create slider and progressbar frame
-        self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
-        self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
-        self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
-        self.seg_button_1 = customtkinter.CTkSegmentedButton(self.slider_progressbar_frame)
-        self.seg_button_1.grid(row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
-        self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
-        self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.slider_1 = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=4)
-        self.slider_1.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
-        self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical")
-        self.slider_2.grid(row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns")
-        self.progressbar_3 = customtkinter.CTkProgressBar(self.slider_progressbar_frame, orientation="vertical")
-        self.progressbar_3.grid(row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns")
+
 
         # create scrollable frame
-        self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="CTkScrollableFrame")
-        self.scrollable_frame.grid(row=1, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
-        self.scrollable_frame.grid_columnconfigure(0, weight=1)
-        self.scrollable_frame_switches = []
-        for i in range(100):
-            switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=f"CTkSwitch {i}")
-            switch.grid(row=i, column=0, padx=10, pady=(0, 20))
-            self.scrollable_frame_switches.append(switch)
+
 
         # create checkbox and switch frame
-        self.checkbox_slider_frame = customtkinter.CTkFrame(self)
-        self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
-        self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame)
-        self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
+
 
         # set default values
-        self.sidebar_button_3.configure(state="disabled", text="Disabled CTkButton")
-        self.checkbox_3.configure(state="disabled")
-        self.checkbox_1.select()
-        self.scrollable_frame_switches[0].select()
-        self.scrollable_frame_switches[4].select()
-        self.radio_button_3.configure(state="disabled")
-        self.appearance_mode_optionemenu.set("Dark")
-        self.scaling_optionemenu.set("100%")
-        self.optionmenu_1.set("CTkOptionmenu")
-        self.combobox_1.set("CTkComboBox")
-        self.slider_1.configure(command=self.progressbar_2.set)
-        self.slider_2.configure(command=self.progressbar_3.set)
-        self.progressbar_1.configure(mode="indeterminnate")
-        self.progressbar_1.start()
-        self.textbox.insert("0.0", "CTkTextbox\n\n" + "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.\n\n" * 20)
-        self.seg_button_1.configure(values=["CTkSegmentedButton", "Value 2", "Value 3"])
-        self.seg_button_1.set("Value 2")
+
 
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="CTkInputDialog")
@@ -159,6 +185,7 @@ class App(customtkinter.CTk):
         print("sidebar_button click")
 
 
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+
+app = App()
+app.mainloop()
+input()
