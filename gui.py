@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, \
 from PyQt6.QtGui import QIcon, QFont, QPixmap, QAction
 from PyQt6.QtCore import Qt, QSize
 import ui_config
+import assets.scan_test
 import os
 
 class ChildWindow(QWidget):
@@ -47,7 +48,7 @@ class ChildWindow(QWidget):
         end_ip_entry = self.create_end_ip_entry()       # (5)
 
         # Add the top row 1 widgets
-        top_layout1.addWidget(top_label1)
+        #top_layout1.addWidget(top_label1)
         top_layout1.addWidget(title)
         top_layout1.addWidget(start_ip_label)
         top_layout1.addWidget(start_ip_entry)
@@ -63,7 +64,7 @@ class ChildWindow(QWidget):
         logo_label.setPixmap(logo)
 
         top_layout2.addWidget(top_label2)
-        top_layout2.addWidget(treeview)
+        top_layout2.addWidget(treeview, stretch=(1))
 
         # Create the bottom layout containers
         bottom_layout1 = QHBoxLayout()
@@ -99,7 +100,7 @@ class ChildWindow(QWidget):
 
         #grid_layout.setColumnStretch(0, 0)
 
-        grid_layout.addLayout(top_layout1, 0, 0, 1, 5)
+        grid_layout.addLayout(top_layout1, 0, 0, 1, 4)
         grid_layout.addLayout(top_layout2, 1, 0, 1, 2)
         grid_layout.addLayout(bottom_layout1, 2, 0)
         grid_layout.addLayout(bottom_layout2, 2, 1)
@@ -111,6 +112,7 @@ class ChildWindow(QWidget):
         grid_layout.setRowStretch(3, 0)
 
         grid_layout.setColumnStretch(2, 1)
+
 
         # Set the main layout to the grid layout
 
@@ -264,7 +266,7 @@ class MainWindow(QMainWindow):
         cmdver_action = QAction(QIcon(icon_terminal), "LAN Pigeon Lite (Terminal)", self)
 
         cmdver_action.setStatusTip("Opens LAN Pigeon Lite, the command line version of LAN Pigeon.")
-        cmdver_action.triggered.connect(self.onMyToolBarButtonClick)
+        cmdver_action.triggered.connect(self.)
         toolbar.addAction(cmdver_action)
 
         return toolbar

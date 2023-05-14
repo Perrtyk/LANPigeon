@@ -1,5 +1,6 @@
 import time
 from PigeonTool import *
+from endpoint import *
 
 tool = PigeonTool()
 start_time = time.time()
@@ -12,6 +13,7 @@ def scan(ip):
     duration_alive = round(duration_alive, 2)
 
     if alive == 'Yes':
+        t_start_time = time.time()
         start_time = time.time()
         ping = tool.ping(ip)
         duration_ping = time.time() - start_time
@@ -26,22 +28,25 @@ def scan(ip):
         mac = tool.mac_address(ip)
         duration_mac = time.time() - start_time
         duration_mac = round(duration_mac, 2)
-        print(ip)
-        print(f'time {duration_alive}     {alive}\ntime {duration_ping}     {ping}\n'
-              f'time {duration_host}     {host}\ntime {duration_mac}     {mac}\n')
-        endpoint = {
-            "ip_address": ip,
-            "alive_status": alive,
-            "ping_status": ping,
-            "hostname_status": host,
-            "mac_address": mac
-        }
+        print(f"Device Found (IP): {ip}")
+        print(f" Thread Time: {round(time.time() - t_start_time, 2)}")
+        print(f'Connect Time: {duration_alive}     {alive}\n   Ping Time: {duration_ping}     {ping}\n'
+              f'   Host Time: {duration_host}     {host}\n    MAC Time: {duration_mac}     {mac}\n')
+        endpoint = Endpoint(ip, alive, host, ping, mac)
+        #endpoint = {
+        #    "ip_address": ip,
+        #    "alive_status": alive,
+        #    "ping_status": ping,
+        #    "hostname_status": host,
+        #    "mac_address": mac
+        #}
     else:
-        endpoint = {
-            "ip_address": ip,
-            "alive_status": 'No',
-            "ping_status": 'N/A',
-            "hostname_status": 'N/A',
-            "mac_address": 'N/A'}
+        endpoint = Endpoint(ip, 'No', 'N/A', 'N/A', 'N/A')
+        #endpoint = {
+        #    "ip_address": ip,
+        #    "alive_status": 'No',
+        #    "ping_status": 'N/A',
+        #    "hostname_status": 'N/A',
+        #    "mac_address": 'N/A'}
 
     return endpoint

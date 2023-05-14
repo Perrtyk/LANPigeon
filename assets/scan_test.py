@@ -2,18 +2,48 @@ from thread_worker import *
 from terminal_table import *
 from save_to_txt import *
 from scan import *
+from endpoint import *
+from endpoint_list import *
 import time
 
-def main():
-    ips = [f"192.168.1.{i}" for i in range(1, 255)]
-    cores = cpu_cores()                         # amount of cores in CPU
-    usage = cpu_usage()                         # maps current usage of CPU in %
-    x = 3                                       # thread multiplier, default 3
+def menu():
+    print('LAN Pigeon Lite\n')
+    options = {1: "Scan IP Range", 2: "Save Results", 3: "Print Data"}
+    print("Please select an option:")
+    for key, value in options.items():
+        print(f"{key} - {value}")
+    selection = input("> ")
+    return int(selection)
+
+def menu_action(select):
+    if select == 1:
+        scan_app()
+
+def scan_input():
+    print()
+    start_ip = input("       Start IP (192.168.1.1): ")
+    end_ip =   input("End IP address (192.168.1.25): ")
+    print()
+    return start_ip, end_ip
+
+def scan_app():
+    start_ip, end_ip = scan_input()
+
+    start = list(map(int, start_ip.split('.')))
+    end = list(map(int, end_ip.split('.')))
+
+    ips = []
+    for i in range(start[3], end[3] + 1):
+        ip = f"{start[0]}.{start[1]}.{start[2]}.{i}"
+        ips.append(ip)
+    cores = cpu_cores()  # amount of cores in CPU
+    usage = cpu_usage()  # maps current usage of CPU in %
+    x = 3  # thread multiplier, default 3
     threads = thread_count(ips, cores, usage) * x
 
-    endpoints = thread_workers(scan, ips, cores, usage, x)  # runs function with set amount of threads
-
-    duration_total = time.time() - start_time
+    duration_start = time.time()
+    endpoints = EndpointArray(thread_workers(scan, ips, cores, usage, x))  # runs function with set amount of threads
+    duration_total = time.time() - duration_start
     duration_total = round(duration_total, 2)
     result = '----------STATS----------\n'
     result += f'Scan Duration: {duration_total} seconds\n'
@@ -22,14 +52,14 @@ def main():
     result += f'Thread Numbers: {threads}\n\n'
 
     result += '-------SCAN  STATS-------\n'
-    result += f"scanned ips: {len(endpoints)}\n"
-    result += f"endpoints found: {len([endpoint for endpoint in endpoints if endpoint['alive_status'] != 'No'])}\n"
-    result += f'scan array:\n'
+    result += f"scanned ips: {endpoints.count}\n"
+    result += f"endpoints found: {len([endpoint for endpoint in endpoints if endpoint.alive != 'No'])}\n"
+    result += f'scan array: {endpoints}\n'
     for endpoint in endpoints:
         result += f'{str(endpoint)}\n'
 
     result += f'\nPRINTING GETTER(Expect index 0 given endpoint 1):\n'
-    result += f'{get_data(endpoints, 1)}\n\n'
+    result += f'{endpoints[1]}\n\n'
 
     result += f'PRINTING TABLE TEST:\n'
     table = create_table(endpoints)
@@ -39,6 +69,10 @@ def main():
 
     prompt_save(result)
     input('Press enter to Exit . . .')
+
+def main():
+    menu_action(menu())
+
 
 if __name__ == "__main__":
     main()
