@@ -6,9 +6,38 @@ from PyQt6.QtCore import Qt
 
 def create_title_label():
     label = QLabel("LAN Pigeon")
+    # label.setAlignment(Qt.AlignmentFlag.AlignLeft)
     label_font = label.font()
     label_font.setPixelSize(18)
     label.setFont(label_font)
+    return label
+
+
+def create_start_label():
+    label = QLabel("Starting IP Address:")
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    label.setStyleSheet("""
+           background-color: #2e5d4b;
+           color: white;
+           font-weight: bold;
+           padding: 4px;
+           border-radius: 5px;
+           """)
+    label.setFixedWidth(125)
+    return label
+
+
+def create_end_label():
+    label = QLabel("Ending IP Address:")
+    label.setAlignment(Qt.AlignmentFlag.AlignLeft)
+    label.setStyleSheet("""
+           background-color: #932020;
+           color: white;
+           font-weight: bold;
+           padding: 4px;
+           border-radius: 5px;
+           """)
+    label.setFixedWidth(125)
     return label
 
 

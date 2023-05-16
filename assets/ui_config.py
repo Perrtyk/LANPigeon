@@ -9,7 +9,7 @@ def ui(self):
     top_layout2 = QHBoxLayout()
 
     # Load the image using QPixmap
-    logo = QPixmap("assets/icon_dark.png")
+    logo = QPixmap("icon_dark.png")
 
     # resize the pixmap to 50x50
     logo = logo.scaled(100, 80)

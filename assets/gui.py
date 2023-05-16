@@ -3,10 +3,43 @@ from PyQt6.QtWidgets import QApplication, QWidget, QVBoxLayout, \
     QHBoxLayout, QGridLayout, QLabel, QPushButton, QLineEdit, \
     QTreeView, QRadioButton, QSystemTrayIcon, QMenuBar, QMenu, QMainWindow, QCheckBox, QStatusBar, QToolBar, QSizePolicy, QSpacerItem, QListWidget
 from PyQt6.QtGui import QIcon, QFont, QPixmap, QAction
-from PyQt6.QtCore import Qt, QSize
-import ui_config
-import assets.scan_test
+from PyQt6.QtCore import Qt, QSize, QRunnable, QThreadPool, QThread, pyqtSlot
+from ui_config import *
+from scan_test import *
+import gui_widgets as widgets
 import os
+import platform
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+    '''
+
+    def __init__(self, function):
+        super().__init__()
+        self.function = function
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Run the specified function in this worker
+        '''
+        self.function()
+
+    def run_terminal(self):
+        '''
+        Run the specified function in a new terminal window based on the platform
+        '''
+        if platform.system() == 'Windows':
+            # Windows
+            subprocess.call(['cmd.exe', '/c', 'python -c "from scan_test import scan_app; scan_app()"'])
+        elif platform.system() == 'Darwin':
+            # macOS
+            subprocess.call(['open', '-a', 'Terminal', 'python -c "from scan_test import scan_app; scan_app()"'])
+        elif platform.system() == 'Linux':
+            # Linux
+            subprocess.call(['gnome-terminal', '-e', 'python -c "from scan_test import scan_app; scan_app()"'])
+
 
 class ChildWindow(QWidget):
     def __init__(self):
@@ -27,7 +60,7 @@ class ChildWindow(QWidget):
         top_layout2 = QHBoxLayout()
 
         # Load the image using QPixmap
-        logo = QPixmap("assets/icon_dark.png")
+        logo = QPixmap("icon_dark.png")
 
         # resize the pixmap to 50x50
         logo = logo.scaled(100, 80)
@@ -38,14 +71,14 @@ class ChildWindow(QWidget):
         top_label1 = QLabel("Top Frame 1")
 
 
-        title = self.create_title_label()               # (1)
+        title = widgets.create_title_label()               # (1)
 
-        start_ip_label = self.create_start_label()      # (2)
+        start_ip_label = widgets.create_start_label()      # (2)
 
-        start_ip_entry = self.create_start_ip_entry()   # (3)
+        start_ip_entry = widgets.create_start_ip_entry()   # (3)
 
-        end_ip_label = self.create_end_label()          # (4)
-        end_ip_entry = self.create_end_ip_entry()       # (5)
+        end_ip_label = widgets.create_end_label()          # (4)
+        end_ip_entry = widgets.create_end_ip_entry()       # (5)
 
         # Add the top row 1 widgets
         #top_layout1.addWidget(top_label1)
@@ -75,7 +108,7 @@ class ChildWindow(QWidget):
         bottom_label1 = QLabel("Bottom Frame 1")
 
         # Load the image using QPixmap
-        logo = QPixmap("assets/icon_dark.png")
+        logo = QPixmap("icon_dark.png")
         # resize the pixmap to 50x50
         logo = logo.scaled(100, 80)
 
@@ -179,6 +212,7 @@ class ChildWindow(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.threadpool = QThreadPool()
 
         # Set up the main window
         self.setWindowTitle("LAN Pigeon")
@@ -202,6 +236,10 @@ class MainWindow(QMainWindow):
         # Create the central widget
         child_window = ChildWindow()
         self.setCentralWidget(child_window)
+
+    def run_function(self, function):
+        worker = Worker(function)
+        self.threadpool.start(worker)
 
     def onMyToolBarButtonClick(self, s):
         print("click", s)
@@ -241,32 +279,31 @@ class MainWindow(QMainWindow):
         icon_size = QSize(32, 32)  # desired icon size
         self.addToolBar(toolbar)
 
-        start_scan_action = QAction(QIcon("assets/icons/icon_start.png"), "&Start Scan", self)
+        start_scan_action = QAction(QIcon("icons/icon_start.png"), "&Start Scan", self)
         start_scan_action.setStatusTip("Start Scanning IP Range.")
         start_scan_action.triggered.connect(self.onMyToolBarButtonClick)
         toolbar.addAction(start_scan_action)
 
         toolbar.addSeparator()
 
-        stop_scan_action = QAction(QIcon("assets/icons/icon_stop.png"), "&Stop Scan", self)
+        stop_scan_action = QAction(QIcon("icons/icon_stop.png"), "&Stop Scan", self)
         stop_scan_action.setStatusTip("Stop Scanning IP Range.")
         stop_scan_action.triggered.connect(self.onMyToolBarButtonClick)
         toolbar.addAction(stop_scan_action)
 
         toolbar.addSeparator()
 
-        icon_save = QPixmap("assets/icons/icon_save.png").scaled(icon_size)
+        icon_save = QPixmap("icons/icon_save.png").scaled(icon_size)
         save_action = QAction(QIcon(icon_save), "Save Results", self)
         save_action.setStatusTip("Save Scan Results.")
         toolbar.addAction(save_action)
 
         toolbar.addSeparator()
 
-        icon_terminal = QPixmap("assets/icons/terminal.png").scaled(icon_size)
-        cmdver_action = QAction(QIcon(icon_terminal), "LAN Pigeon Lite (Terminal)", self)
+        icon_terminal = QPixmap("icons/terminal.png").scaled(icon_size)
+        cmdver_action = QAction(QIcon(icon_terminal), "&LAN Pigeon Lite (Terminal)", self)
+        cmdver_action.triggered.connect(lambda: window.run_function(scan_app))
 
-        cmdver_action.setStatusTip("Opens LAN Pigeon Lite, the command line version of LAN Pigeon.")
-        cmdver_action.triggered.connect(self.)
         toolbar.addAction(cmdver_action)
 
         return toolbar
