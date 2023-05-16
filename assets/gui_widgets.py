@@ -3,6 +3,10 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QRadioButton, QSystemTrayIcon, QMenuBar, QMenu)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
+from thread_worker import *
+from endpoint import *
+from endpoint_list import *
+from scan import *
 
 
 
@@ -49,6 +53,21 @@ def create_start_scan_button():
     b.setFixedWidth(70)
     return b
 
+def start_scan_button_trigger(start, end):
+    start_ip, end_ip = start, end
+    start = list(map(int, start_ip.split('.')))
+    end = list(map(int, end_ip.split('.')))
+
+    ips = []
+    for i in range(start[3], end[3] + 1):
+        ip = f"{start[0]}.{start[1]}.{start[2]}.{i}"
+        ips.append(ip)
+    cores = cpu_cores()  # amount of cores in CPU
+    usage = cpu_usage()  # maps current usage of CPU in %
+    x = 3  # thread multiplier, default 3
+    endpoints = EndpointArray(thread_workers(scan, ips, cores, usage, x))  # runs function with set amount of threads
+    return update_treeview(endpoints)
+
 
 def create_start_ip_entry():
     s_entry = QLineEdit()
@@ -92,3 +111,25 @@ def create_treeview(data):
             root_item.appendRow([ip_item, hostname_item, ping_item, mac_item])
 
     return treeview
+
+def update_treeview(tv, data):
+    model = tv.treeview.model()
+    model.clear()  # Clear the existing data in the model
+
+    if data is not None:
+        headers = ["IP Address", "Hostname", "Ping", "MAC Address"]
+        model.setHorizontalHeaderLabels(headers)
+
+        root_item = model.invisibleRootItem()
+        for item in data:
+            ip_item = QStandardItem(item["ip_address"])
+            hostname_item = QStandardItem(item["hostname_status"])
+            ping_item = QStandardItem(item["ping_status"])
+            mac_item = QStandardItem(item["mac_address"])
+            root_item.appendRow([ip_item, hostname_item, ping_item, mac_item])
+
+    # Resize the columns to fit the content
+    tv.treeview.resizeColumnToContents(0)
+    tv.treeview.resizeColumnToContents(1)
+    tv.treeview.resizeColumnToContents(2)
+    tv.treeview.resizeColumnToContents(3)

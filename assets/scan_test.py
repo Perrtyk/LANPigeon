@@ -66,7 +66,6 @@ def scan_app():
     result += f'{table}\n\n'
 
     print(result)
-
     prompt_save(result)
     input('Press enter to Exit . . .')
 
