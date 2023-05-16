@@ -53,6 +53,7 @@ class ChildWindow(QWidget):
         os.chdir(os.path.dirname(os.path.abspath(__file__)))
         print("New working directory:", os.getcwd())
         self.ui_config()
+        self.tv = []
 
     def ui_config(self):
         # Create the top layout containers
@@ -89,15 +90,13 @@ class ChildWindow(QWidget):
         top_layout1.addWidget(end_ip_entry)
 
         # Create the top row 2 widgets
-        top_label2 = QLabel("Top Frame 2")
-        treeview = QTreeView()
+        treeview = widgets.create_treeview([])
 
 
         logo_label = QLabel()
         logo_label.setPixmap(logo)
 
-        top_layout2.addWidget(top_label2)
-        top_layout2.addWidget(treeview, stretch=(1))
+        top_layout2.addWidget(treeview, stretch=1)
 
         # Create the bottom layout containers
         bottom_layout1 = QHBoxLayout()
@@ -105,7 +104,6 @@ class ChildWindow(QWidget):
         bottom_layout3 = QHBoxLayout()
 
         # Create the bottom widgets
-        bottom_label1 = QLabel("Bottom Frame 1")
 
         # Load the image using QPixmap
         logo = QPixmap("icon_dark.png")
@@ -113,7 +111,6 @@ class ChildWindow(QWidget):
         logo = logo.scaled(100, 80)
 
 
-        bottom_layout1.addWidget(bottom_label1)
         bottom_layout1.addWidget(logo_label)
 
         bottom_label2 = QLabel("Bottom Frame 2")
@@ -134,7 +131,7 @@ class ChildWindow(QWidget):
         #grid_layout.setColumnStretch(0, 0)
 
         grid_layout.addLayout(top_layout1, 0, 0, 1, 4)
-        grid_layout.addLayout(top_layout2, 1, 0, 1, 2)
+        grid_layout.addLayout(top_layout2, 1, 0, 1, 4)
         grid_layout.addLayout(bottom_layout1, 2, 0)
         grid_layout.addLayout(bottom_layout2, 2, 1)
         grid_layout.addLayout(bottom_layout3, 2, 2)
@@ -217,7 +214,7 @@ class MainWindow(QMainWindow):
         # Set up the main window
         self.setWindowTitle("LAN Pigeon")
         self.setWindowIcon(QIcon("bit_icon.ico"))
-        self.setGeometry(100, 100, 500, 300)
+        self.setGeometry(100, 100, 500, 600)
         self.setMaximumSize(900, 1100)
 
         # Create the toolbar

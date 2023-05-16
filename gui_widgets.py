@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QGridLayout, QLabel, QPushButton, QLineEdit, QTreeView,
                              QRadioButton, QSystemTrayIcon, QMenuBar, QMenu)
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QStandardItem, QStandardItemModel
+
 
 
 def create_title_label():
@@ -64,3 +66,29 @@ def create_end_ip_entry():
     e_entry.setFixedWidth(150)
     e_entry.setStyleSheet("padding: 4px; border: 4px; border-radius: 1px; margin-left: 10px;")
     return e_entry
+
+
+def create_treeview(data):
+    headers = ["IP Address", "Hostname", "Ping", "MAC Address"]
+    treeview = QTreeView()
+    model = QStandardItemModel()
+    model.setHorizontalHeaderLabels(headers)
+    treeview.setModel(model)
+
+    root_item = model.invisibleRootItem()
+    if data is None:
+        item = 'test'
+        ip_item = QStandardItem(item)
+        hostname_item = QStandardItem(item)
+        ping_item = QStandardItem(item)
+        mac_item = QStandardItem(item)
+        root_item.appendRow([ip_item, hostname_item, ping_item, mac_item])
+    else:
+        for item in data:
+            ip_item = QStandardItem(item["ip_address"])
+            hostname_item = QStandardItem(item["hostname_status"])
+            ping_item = QStandardItem(item["ping_status"])
+            mac_item = QStandardItem(item["mac_address"])
+            root_item.appendRow([ip_item, hostname_item, ping_item, mac_item])
+
+    return treeview

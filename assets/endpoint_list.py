@@ -1,11 +1,11 @@
 from endpoint import Endpoint
 
-class EndpointArray:
+class EndpointArray(Endpoint):
     def __init__(self, array):
+        super().__init__(ip=None, alive=None, hostname=None, ping=None, mac=None)
         self.__endpoints = []
         for endpoint in array:
             self.__endpoints.append(endpoint)
-
 
     @property
     def count(self):
