@@ -2,12 +2,14 @@ from thread_worker import *
 from terminal_table import *
 from save_to_txt import *
 from scan import *
+from PigeonTool import *
 from endpoint import *
 from endpoint_list import *
 import time
 
 def menu():
     print('LAN Pigeon Lite\n')
+    print(f'Current IP: {PigeonTool.current_ip()}')
     options = {1: "Scan IP Range", 2: "Save Results", 3: "Print Data"}
     print("Please select an option:")
     for key, value in options.items():

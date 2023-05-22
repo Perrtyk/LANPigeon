@@ -132,16 +132,16 @@ class App(customtkinter.CTk):
         # set terminal based on OS
         if sys.platform.startswith('win'):
             # For Windows
-            cmd = 'start cmd /c python scan_test.py'
+            cmd = 'start cmd /c python lanpigeon_lite.py'
         elif sys.platform.startswith('darwin'):
             # For Mac
-            cmd = 'open -a Terminal python scan_test.py'
+            cmd = 'open -a Terminal python lanpigeon_lite.py'
         else:
             # For Linux
-            cmd = 'gnome-terminal -x python scan_test.py'
+            cmd = 'gnome-terminal -x python lanpigeon_lite.py'
 
         # Spawn a new process to run the command in a separate terminal window
-        subprocess.run(['start', '/b', 'cmd', '/c', 'python', 'scan_test.py'], shell=True)
+        subprocess.run(['start', '/b', 'cmd', '/c', 'python', 'lanpigeon_lite.py'], shell=True)
         #subprocess.run(['x-terminal-emulator', '-e', 'python /path/to/your/script.py'])
         # create sidebar frame with widgets
 

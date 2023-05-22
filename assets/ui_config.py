@@ -92,4 +92,4 @@ def C_Window_UI(self):
     self.setLayout(grid_layout)
 
 if __name__  == "__main__":
-    ui_config()
+    C_Window_UI()

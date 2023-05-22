@@ -36,8 +36,6 @@ class PigeonTool:
             return result
 
     def mac_address(self, ip_address):
-        message_mac = f'[{self.current_time}]     MAC ({ip_address}):'
-
         # Create an ARP request packet for the given IP address
         arp_request = ARP(pdst=ip_address)
 
@@ -69,3 +67,9 @@ class PigeonTool:
         except Exception as e:
             hostname = 'N/A'
             return hostname
+    @staticmethod
+    def current_ip():
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        return ip_address
+

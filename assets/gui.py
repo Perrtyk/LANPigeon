@@ -1,43 +1,28 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QWidget, QMenuBar, QMenu, QMainWindow, QStatusBar, QToolBar
 from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import Qt, QSize, QRunnable, QThreadPool, pyqtSlot
+from PyQt6.QtCore import Qt, QSize, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
 from ui_config import *
-from scan_test import *
-from assets import gui_widgets as widgets
+import lanpigeon_lite as lpl
+import gui_widgets as widgets
 import ui_config
 import os
 import platform
 
-class Worker(QRunnable):
+class ScanThread(QRunnable):
     '''
     Worker thread
     '''
-
-    def __init__(self, function):
-        super().__init__()
-        self.function = function
+    def __init__(self, fn, *args, **kwargs):
+        super(ScanThread, self).__init__()
+        # Storing constructor arguments (re-use for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
 
     @pyqtSlot()
     def run(self):
-        '''
-        Run the specified function in this worker
-        '''
-        self.function()
-
-    def run_terminal(self):
-        '''
-        Run the specified function in a new terminal window based on the platform
-        '''
-        if platform.system() == 'Windows':
-            # Windows
-            subprocess.call(['cmd.exe', '/c', 'python -c "from scan_test import scan_app; scan_app()"'])
-        elif platform.system() == 'Darwin':
-            # macOS
-            subprocess.call(['open', '-a', 'Terminal', 'python -c "from scan_test import scan_app; scan_app()"'])
-        elif platform.system() == 'Linux':
-            # Linux
-            subprocess.call(['gnome-terminal', '-e', 'python -c "from scan_test import scan_app; scan_app()"'])
+        self.fn(*self.args, **self.kwargs)
 
 
 class ChildWindow(QWidget):
@@ -82,10 +67,6 @@ class MainWindow(QMainWindow):
         child_window = ChildWindow()
         self.setCentralWidget(child_window)
 
-    def run_function(self, function):
-        worker = Worker(function)
-        self.threadpool.start(worker)
-
     def onMyToolBarButtonClick(self, s):
         print("click", s)
 
@@ -126,7 +107,7 @@ class MainWindow(QMainWindow):
 
         start_scan_action = QAction(QIcon("icons/icon_start.png"), "&Start Scan", self)
         start_scan_action.setStatusTip("Start Scanning IP Range.")
-        start_scan_action.triggered.connect(self.onMyToolBarButtonClick)
+        start_scan_action.triggered.connect(self.run_scan_thread)
         toolbar.addAction(start_scan_action)
 
         toolbar.addSeparator()
@@ -147,11 +128,18 @@ class MainWindow(QMainWindow):
 
         icon_terminal = QPixmap("icons/terminal.png").scaled(icon_size)
         cmdver_action = QAction(QIcon(icon_terminal), "&LAN Pigeon Lite (Terminal)", self)
-        cmdver_action.triggered.connect(lambda: window.run_function(scan_app))
+        cmdver_action.triggered.connect(lambda: window.run_function(lpl.scan_app))
 
         toolbar.addAction(cmdver_action)
 
         return toolbar
+
+    def run_scan_thread(self):
+        thread = ScanThread(lpl.scan_app)
+        self.threadpool.start((thread))
+
+    def completed_scan_thread(self):
+        print('Complete!')
 
     @staticmethod
     def create_start_scan_button():

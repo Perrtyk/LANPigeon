@@ -1,13 +1,28 @@
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QGridLayout, QLabel, QPushButton, QLineEdit, QTreeView,
                              QRadioButton, QSystemTrayIcon, QMenuBar, QMenu)
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QRunnable, pyqtSlot
 from PyQt6.QtGui import QStandardItem, QStandardItemModel
 from thread_worker import *
 from endpoint import *
 from endpoint_list import *
 from scan import *
 
+class Worker(QRunnable):
+    '''
+    Worker thread
+    '''
+
+    def __init__(self, function):
+        super().__init__()
+        self.function = function
+
+    @pyqtSlot()
+    def run(self):
+        '''
+        Run the specified function in this worker
+        '''
+        self.function()
 
 
 def create_title_label():
@@ -66,6 +81,7 @@ def start_scan_button_trigger(start, end):
     usage = cpu_usage()  # maps current usage of CPU in %
     x = 3  # thread multiplier, default 3
     endpoints = EndpointArray(thread_workers(scan, ips, cores, usage, x))  # runs function with set amount of threads
+    QApplication.processEvents()
     return update_treeview(endpoints)
 
 
@@ -133,3 +149,4 @@ def update_treeview(tv, data):
     tv.treeview.resizeColumnToContents(1)
     tv.treeview.resizeColumnToContents(2)
     tv.treeview.resizeColumnToContents(3)
+    QApplication.processEvents()
