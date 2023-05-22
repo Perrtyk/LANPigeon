@@ -1,28 +1,59 @@
 import sys
+import traceback
+
 from PyQt6.QtWidgets import QApplication, QWidget, QMenuBar, QMenu, QMainWindow, QStatusBar, QToolBar
 from PyQt6.QtGui import QIcon, QAction
-from PyQt6.QtCore import Qt, QSize, QRunnable, QThreadPool, pyqtSlot, pyqtSignal
+from PyQt6.QtCore import Qt, QSize, QRunnable, QThreadPool, pyqtSlot, pyqtSignal, QObject
 from ui_config import *
 import lanpigeon_lite as lpl
 import gui_widgets as widgets
 import ui_config
 import os
 import platform
+import time
 
-class ScanThread(QRunnable):
+class WorkerSignals(QObject):
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
+
+class WorkerThread(QRunnable):
     '''
     Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
     '''
+
     def __init__(self, fn, *args, **kwargs):
-        super(ScanThread, self).__init__()
+        super(WorkerThread, self).__init__()
         # Storing constructor arguments (re-use for processing)
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
+        self.signals = WorkerSignals()
+        # self.kwargs['progress_callback'] = self.signals.progress --- callback causes thread to crash.
 
     @pyqtSlot()
     def run(self):
-        self.fn(*self.args, **self.kwargs)
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit('Done')
+            # self.signals.result.emit(result)  # Return the result of the processing [TESTING]
+        finally:
+            self.signals.finished.emit()  # Done
 
 
 class ChildWindow(QWidget):
@@ -43,6 +74,12 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.threadpool = QThreadPool()
+        self.current_dir = os.getcwd()
+        # Resets working directory for compatibility issues
+        print("Current working directory:", self.current_dir)
+        os.chdir(os.path.dirname(os.path.abspath(__file__)))
+        print("New working directory:", os.getcwd())
+        ui_config.C_Window_UI(self)
 
         # Set up the main window
         self.setWindowTitle("LAN Pigeon")
@@ -67,8 +104,38 @@ class MainWindow(QMainWindow):
         child_window = ChildWindow()
         self.setCentralWidget(child_window)
 
-    def onMyToolBarButtonClick(self, s):
-        print("click", s)
+    def thread_complete(self):
+        print("THREAD COMPLETE!\n")
+
+    def run_lanpigeon_lite_thread(self):
+        thread = WorkerThread(lpl.scan_app)
+        self.threadpool.start(thread)
+
+        thread.signals.finished.connect(self.thread_complete)
+
+    def run_scan_thread(self):
+        thread = WorkerThread(self.click_run_scan)
+        self.threadpool.start(thread)
+
+        thread.signals.finished.connect(self.thread_complete)
+
+    def run_stop_thread(self):
+        thread = WorkerThread(self.click_stop_scan)
+        self.threadpool.start(thread)
+
+        thread.signals.finished.connect(self.thread_complete)
+
+    def click_run_scan(self):
+        print('Clicked Run Scan Button!')
+        print('Sleep for 5 Seconds, expect responsive GUI.')
+        time.sleep(5)
+        print('Sleep Complete.')
+
+    def click_stop_scan(self):
+        print('Clicked Stop Scan!')
+        print('Sleep for 5 Seconds, expect responsive GUI.')
+        time.sleep(5)
+        print('Sleep Complete.')
 
     def create_menu_bar(self):
         # Create the menu bar and add menu items
@@ -114,7 +181,7 @@ class MainWindow(QMainWindow):
 
         stop_scan_action = QAction(QIcon("icons/icon_stop.png"), "&Stop Scan", self)
         stop_scan_action.setStatusTip("Stop Scanning IP Range.")
-        stop_scan_action.triggered.connect(self.onMyToolBarButtonClick)
+        stop_scan_action.triggered.connect(self.run_stop_thread)
         toolbar.addAction(stop_scan_action)
 
         toolbar.addSeparator()
@@ -128,18 +195,11 @@ class MainWindow(QMainWindow):
 
         icon_terminal = QPixmap("icons/terminal.png").scaled(icon_size)
         cmdver_action = QAction(QIcon(icon_terminal), "&LAN Pigeon Lite (Terminal)", self)
-        cmdver_action.triggered.connect(lambda: window.run_function(lpl.scan_app))
+        cmdver_action.triggered.connect(self.run_lanpigeon_lite_thread)
 
         toolbar.addAction(cmdver_action)
 
         return toolbar
-
-    def run_scan_thread(self):
-        thread = ScanThread(lpl.scan_app)
-        self.threadpool.start((thread))
-
-    def completed_scan_thread(self):
-        print('Complete!')
 
     @staticmethod
     def create_start_scan_button():

@@ -8,21 +8,7 @@ from endpoint import *
 from endpoint_list import *
 from scan import *
 
-class Worker(QRunnable):
-    '''
-    Worker thread
-    '''
 
-    def __init__(self, function):
-        super().__init__()
-        self.function = function
-
-    @pyqtSlot()
-    def run(self):
-        '''
-        Run the specified function in this worker
-        '''
-        self.function()
 
 
 def create_title_label():
@@ -125,6 +111,9 @@ def create_treeview(data):
             ping_item = QStandardItem(item["ping_status"])
             mac_item = QStandardItem(item["mac_address"])
             root_item.appendRow([ip_item, hostname_item, ping_item, mac_item])
+
+    for c in range(0, 3-1):
+        treeview.resizeColumnToContents(c)
 
     return treeview
 
