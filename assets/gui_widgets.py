@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QGridLayout, QLabel, QPushButton, QLineEdit, QTreeView,
-                             QRadioButton, QSystemTrayIcon, QMenuBar, QMenu)
+                             QRadioButton, QSystemTrayIcon, QMenuBar, QMenu, QHeaderView)
 from PyQt6.QtCore import Qt, QRunnable, pyqtSlot
-from PyQt6.QtGui import QStandardItem, QStandardItemModel
+from PyQt6.QtGui import QStandardItem, QStandardItemModel, QFont
 from thread_worker import *
 from endpoint import *
 from endpoint_list import *
@@ -112,8 +112,19 @@ def create_treeview(data):
             mac_item = QStandardItem(item["mac_address"])
             root_item.appendRow([ip_item, hostname_item, ping_item, mac_item])
 
-    for c in range(0, 3-1):
+    for c in range(0, 3):
         treeview.resizeColumnToContents(c)
+
+    # Center align the headers in their columns
+    header = treeview.header()
+    header.setDefaultAlignment(Qt.AlignmentFlag.AlignCenter)
+
+    # Set the resize mode to stretch for all sections
+    header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+
+    # Optionally, you can adjust the font style of the headers
+    font = QFont("Arial", 10, QFont.Weight.Bold)
+    header.setFont(font)
 
     return treeview
 
